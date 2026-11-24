@@ -1,17 +1,15 @@
-# Measurement and interpretation limits
+# Limitations
 
-The prototype demonstrates system integration. Controller activation did not establish effective physical assistance, and the existing EMG exports do not establish reduced muscle effort.
+This is a pilot prototype. It shows the sensing, control, and actuation working together. It doesn't show that the exoskeleton reduces effort.
 
-## EMG
+**Actuation.** The steppers can't deliver enough cable tension under load. With a 5 lb dumbbell the system stalled, and participants didn't notice real lifting help during the trials. During spool release the participant had to lower the arm on purpose to keep the cable taut.
 
-Exported timing implies approximately 51.2 Hz where usable, with constant/shared timestamps in some files. This is not verified acquisition rate or bandwidth. Channel placement, signal type, gain, electrode contact, clipping, and motion artifacts remain unresolved. Whole-record means combine unequal rest/movement intervals. The 100 ms CH2 processor and poster comparison are distinct outputs; preserve their method notes.
+**Angle measurement.** Accurate to about 45°, then it reads 17 to 20° low near 90 to 120°, and it doesn't fully return to zero. The controller compensates with a fixed scale factor (`MEASURED_ANGLE_AT_PHYSICAL_100_DEG` in `config.h`). A real fix needs better IMU mounting or a per-user calibration.
 
-## IMU and motor output
+**What the logs measure.** Motor output is logged as step pulses, not torque or cable force. Since the user moves voluntarily during assist, the logs can't separate how much lifting came from the motors.
 
-Relative rotation is an unvalidated elbow-angle proxy. Sensor freshness does not establish anatomical accuracy. ASSIST is a controller state, and emitted steps count firmware pulses rather than measured motor rotation or torque. Participants can voluntarily move during recorded assistance. The logs do not isolate motor-only lifting effectiveness.
+**Data quirks.** Trial 4 has a sudden orientation jump, and trials 5 and 6 have brief spikes. They're left in the data as recorded. One trial ends partway through an assist.
 
-Trial 4 contains an abrupt orientation change; trials 5 and 6 contain brief excursions. Existing analysis retains all samples without assigning a cause. An incomplete ASSIST interval has unknown duration.
+**EMG.** Timing problems and uneven movement intervals (see [methods](../docs/methods.md)) mean the EMG data can't tell us whether muscle effort went down.
 
-## Experimental scope
-
-The EMG and IMU recordings are separate, not synchronized. This is pilot prototype research, not a clinical efficacy result. Future work should verify timing and signal bandwidth, measure cable force, improve actuation and pretension, validate anatomical angles, and standardize synchronized recording intervals.
+**Next time:** stronger motors, a load cell on the cable, better angle calibration, and IMU and EMG recorded together with a fixed movement protocol.

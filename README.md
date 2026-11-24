@@ -8,7 +8,7 @@ Over about 40 lab days I took an inherited tensegrity arm, rebuilt it to actuall
 
 **What works:** both IMUs stream reliably, the firmware turns them into an elbow angle, and the motors follow the arm and trigger an assist when the arm stalls mid-curl. **What doesn't (yet):** the motors are too weak. With a 5 lb dumbbell the system stalled, and test participants didn't feel meaningful lifting help. This is a proof of concept for the sensing and control loop, not a finished assistive device.
 
-![Integrated upper-limb research prototype](results/figures/assets/tensegrity%20arm.png)
+![Integrated upper-limb research prototype](results/figures/photos/prototype.png)
 
 ### Start here (2-minute tour)
 
@@ -18,7 +18,7 @@ Over about 40 lab days I took an inherited tensegrity arm, rebuilt it to actuall
 | IMU packet parsing and elbow-angle math | [`firmware/controller/src/imu.cpp`](firmware/controller/src/imu.cpp) |
 | The PCB | [`hardware/electronics/pcb-v1`](hardware/electronics/pcb-v1) (KiCad + Gerbers for the fabricated Rev A board) and the [layout image](results/figures/photos/pcb-layout.png) |
 | How it all came together | [Build log](docs/build-log.md) |
-| The research poster | [Poster preview](results/poster/source-and-previews/finalposter.jpg) |
+| The research poster | [Poster](results/poster/source-and-previews/finalposter.jpg) |
 
 ## What I built
 
@@ -28,7 +28,7 @@ Over about 40 lab days I took an inherited tensegrity arm, rebuilt it to actuall
 | **Sensing** | Two BNO085 IMUs in UART-RVC mode, each on its own ESP32 UART. The firmware validates every 19-byte packet with a checksum, converts each IMU to a quaternion, and takes the relative rotation as the elbow angle. |
 | **Control** | A 100 Hz state machine (disabled, calibrating, follow, assist, release, fault). In follow, the spools keep the cables just slack as the arm moves. If the arm dips while held up (a stall), it switches to assist and winds the cable, then releases when motion resumes, the arm is lowered, or a time limit is hit. Includes filtering, a deadband, travel limits, sensor-loss shutdown, and a manual stop switch. |
 | **Electronics** | Prototyped on a breadboard, then a perfboard, then designed a 2-layer PCB (Rev A, fabricated through OSH Park): socketed ESP32 and A4988 stepper drivers, JST-XH connectors for the IMUs and motors, a Mini360 buck converter, an optional XT30 LiPo input, sized power traces, and an antenna keep-out. ERC and DRC clean. |
-| **Testing** | Dual-IMU angle validation on my arm and a rigid dummy arm, spool and cable-travel measurement, six IMU controller trials, and an EMG pilot comparing baseline and assisted lifts. |
+| **Testing** | Dual-IMU angle validation on my arm and a rigid dummy arm, spool and cable-travel measurement, six IMU controller trials, and an EMG pilot comparing lifts with and without the exoskeleton. |
 
 ### Problems I had to solve
 
@@ -63,70 +63,46 @@ Readings rise consistently with flexion, which is good enough for feedback contr
 | --- | --- |
 | ![Tensegrity arm frame](results/figures/photos/tensegrity-frame.jpg) | ![CAD assembly](results/figures/photos/cad-assembly.png) |
 
-## Explore the research
+## Repo layout
 
-| Area | Contents |
+| Folder | What's in it |
 | --- | --- |
-| [Firmware](firmware/README.md) | Current controller, independent loggers, calibration, and sensor examples |
-| [Hardware](hardware/README.md) | Mechanical component designs, cable calculations, and two PCB revisions |
-| EMG experiment | Raw Shimmer recordings are kept private; processing code is in [analysis](analysis/README.md) and figures in [results](results/README.md) |
-| [IMU experiment](experiments/imu-controller-demo/README.md) | Six controller recordings and per-trial analysis |
-| [Analysis](analysis/README.md) | Python acquisition and plotting, MATLAB processing, and legacy methods |
-| [Results](results/README.md) | Figures, poster preview, and limits on interpretation |
-| [Methods](docs/methods.md) | Experiment separation, provenance, and measurement definitions |
-| [Build log](docs/build-log.md) | How the prototype came together, condensed from my lab notebook |
+| [`firmware/`](firmware/README.md) | ESP32 firmware (PlatformIO): the main controller, trial loggers, and a dual-IMU test |
+| [`hardware/`](hardware/README.md) | My CAD parts, the spring calculator, and the KiCad PCB |
+| [`experiments/`](experiments/imu-controller-demo/README.md) | Data from the six IMU controller trials |
+| [`analysis/`](analysis/README.md) | Python for the IMU trials, MATLAB for the EMG pilot |
+| [`results/`](results/README.md) | Figures, the poster, and [limitations](results/limitations.md) |
+| `docs/` | [Build log](docs/build-log.md), [wiring](docs/wiring.md), [methods](docs/methods.md), and the [research question](docs/research-question.md) |
 
-## Repository layout
+The raw EMG recordings aren't published here, but the code that processed them is.
 
-```text
-firmware/       Independent PlatformIO projects and calibration
-hardware/       Mechanical components and electronics revisions
-experiments/    Original data, derived tables, protocols, and metadata
-analysis/       Acquisition and analysis code
-results/        Figures and poster previews
-docs/           Research question, methods, and build log
-archive/        Original wiring and hardware notes
-```
+## Running it
 
-This public repository is a curated copy of the research archive. Raw EMG recordings, large poster originals, inherited CAD, and restricted third-party files are kept private.
-
-## Reproduce the IMU analysis
-
-From the repository root, use Python 3 in a virtual environment:
+**Firmware** (needs [PlatformIO](https://platformio.org/)):
 
 ```sh
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r analysis/requirements.txt
+pio run -d firmware/controller            # build
+pio run -d firmware/controller -t upload  # flash an ESP32
+```
+
+Wiring is in [docs/wiring.md](docs/wiring.md).
+
+**IMU analysis** (Python 3):
+
+```sh
+python -m venv .venv && source .venv/bin/activate
+pip install -r analysis/requirements.txt
 python analysis/imu/analyze_imu.py --output analysis/reproduced/imu
 ```
 
-The script reads the six original IMU CSVs by default. It produces per-trial summaries, combined derived data, figures, notes, and a bundle. Reproduction outputs stay separate from the imported historical results.
-
-The EMG pipeline is `analysis/emg/process_all_emg.m` (MATLAB). The raw EMG spreadsheets it reads are not published, so it is included for reference. See the [analysis guide](analysis/README.md).
-
-## Build firmware
-
-Open one folder containing `platformio.ini` in PlatformIO, or run:
-
-```sh
-pio run -d firmware/controller
-```
-
-The default target is `esp32dev`. Each logger is a separate project; do not combine their `setup()` and `loop()` entry points. Build checks do not establish physical hardware behavior. Wiring and historical hardware details are preserved in the [earlier firmware documentation](archive/documentation/README-before-research-organization.md).
+This regenerates the trial summaries and plots from the raw CSVs.
 
 ## Next steps
 
-If I keep going, the priorities are stronger actuation (higher-torque motors and better cable pretension), measuring actual cable force instead of inferring it from motor steps, fixing the angle offset, and running synchronized IMU and EMG trials with a standard movement protocol.
+If I keep going, the priorities are stronger actuation (higher-torque motors and better cable pretension), a load cell to measure actual cable force, a better angle calibration, and recording IMU and EMG together with a standard movement protocol.
 
-## Detailed findings
+## Thanks
 
-The six IMU recordings document motion sensing and controller activation; participant notes report no noticeable lifting assistance. EMG export timing, signal drift, and inconsistent recording intervals prevent a reliable conclusion about reduced muscle effort. Relative IMU angle and emitted motor pulses are proxies, not independently validated anatomical angle or measured torque.
+Thanks to Dr. Alan Zhang for advising me, to Israel Villegas, whose earlier tensegrity arm was my starting point, and to Robert, who helped me assemble and debug the Rev A board. Tom Flemons' tensegrity arm models were a big influence on the structure.
 
-See [limitations](results/limitations.md).
-
-## Sharing and attribution
-
-Thanks to Dr. Alan Zhang for advising the project, Israel Villegas, whose earlier tensegrity arm was my starting point, and Robert, who helped assemble and debug the Rev A board. Tom Flemons' tensegrity arm models were a big influence on the structure.
-
-Published with the approval of the research advisor. Hardware files in `hardware/` are the author's own designs; inherited and vendor files are excluded, and no license is assigned to third-party work.
+Shared with my advisor's approval. Everything in `hardware/` is my own design; inherited and vendor CAD is left out.

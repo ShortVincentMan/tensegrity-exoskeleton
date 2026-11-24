@@ -26,4 +26,4 @@ Each folder is its own PlatformIO project targeting an ESP32 (`esp32dev`), writt
 pio run -d firmware/controller
 ```
 
-A successful build only means the code compiles. It hasn't been tested on hardware. Wiring details are in the [original wiring notes](../archive/documentation/README-before-research-organization.md).
+Pin assignments and IMU setup are in [docs/wiring.md](../docs/wiring.md).

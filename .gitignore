@@ -34,10 +34,6 @@
 !/experiments/imu-controller-demo/**
 /experiments/imu-controller-demo/raw/unscored/
 
-# Original wiring notes
-!/archive/
-!/archive/documentation/
-!/archive/documentation/README-before-research-organization.md
 
 # Selected results
 !/results/
