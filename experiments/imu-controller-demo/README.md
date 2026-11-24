@@ -5,7 +5,6 @@ Six `t1` through `t6` recordings document arm-on controller activity without ext
 ## Files
 
 - `raw/`: the six analysis CSVs and their original serial logs.
-- `derived/spreadsheets/`: manual processing exports, separate from original CSVs.
 - `processed/`: imported summary, combined derived table, and interpretation notes.
 - `protocol.txt`: original acquisition instructions and measurement definitions.
 - `metadata/trials.json`: trial source identities and unresolved metadata.

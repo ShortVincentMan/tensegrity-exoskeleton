@@ -4,7 +4,7 @@ Mechanical changes and electronics revisions are preserved with their original f
 
 ## Mechanical components
 
-`mechanical/components/` groups your own CAD into enclosure, fairleads, motor mounts, IMU mounts, spools, and connectors/caps. Source-folder names are retained within each group to avoid collisions and preserve origin. Fusion `.f3d` sources and printable `.stl`/`.3mf` exports remain distinct. The cable and spring workbook is under `mechanical/calculations/`.
+`mechanical/components/` groups the author's own CAD into enclosure, fairleads, motor mounts, IMU mounts, spools, and connectors/caps. Source-folder names are retained within each group to avoid collisions and preserve origin. Fusion `.f3d` sources and printable `.stl`/`.3mf` exports remain distinct. The cable and spring workbook is under `mechanical/calculations/`.
 
 Inherited CAD and assemblies are under the ignored `local-review/mechanical/inherited-cad/` folder on the organizing machine. Assemblies retain their source hierarchy; authorship and native assembly references need review before import into published hardware. Printer-specific jobs remain in local review. Explicitly restricted CAD is only in the original SURP archive.
 
