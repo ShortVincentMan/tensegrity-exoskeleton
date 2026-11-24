@@ -1,0 +1,1 @@
+Trial 3: arm-on motion with no external weight. Shading marks the controller ASSIST state; the dashed line marks its target. Angle is relative to the logged zero, not independently calibrated anatomical elbow angle. The participant deliberately lowered the arm during spool release to maintain cable tension.

@@ -12,4 +12,4 @@ The collection documents integrated motion sensing, controller activity, custom 
 
 The poster preview was visually reviewed for content selection. It is a preserved research artifact, not evidence that every plotted quantity has been independently validated. Its EMG comparison uses a different presentation pipeline/window from the CH2 whole-record processor; do not imply the two outputs are identical methods.
 
-Large poster PDFs and Illustrator/InDesign sources remain in the SURP archive. The blank template and draft containing result placeholders are not presented as the final poster. See [storage](../docs/storage.md) and [limitations](limitations.md).
+Large poster PDFs and Illustrator/InDesign sources remain in the SURP archive. The blank template and draft containing result placeholders are not presented as the final poster. See [limitations](limitations.md).

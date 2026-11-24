@@ -15,13 +15,12 @@ The prototype demonstrates integrated sensing, motor commands, and controller ac
 | --- | --- |
 | [Firmware](firmware/README.md) | Current controller, independent loggers, calibration, and sensor examples |
 | [Hardware](hardware/README.md) | Mechanical component designs, cable calculations, and two PCB revisions |
-| [EMG experiment](experiments/emg-condition-comparison/README.md) | Original Shimmer exports, spreadsheets, and exploratory RMS outputs |
+| EMG experiment | Raw Shimmer recordings are kept private; processing code is in [analysis](analysis/README.md) and figures in [results](results/README.md) |
 | [IMU experiment](experiments/imu-controller-demo/README.md) | Six controller recordings, raw serial logs, and per-trial analysis |
 | [Analysis](analysis/README.md) | Python acquisition and plotting, MATLAB processing, and legacy methods |
 | [Results](results/README.md) | Figures, poster preview, and limits on interpretation |
 | [Methods](docs/methods.md) | Experiment separation, provenance, and measurement definitions |
 | [Development history](docs/development-log.md) | Project stages and preserved historical firmware |
-| [Source inventory](docs/provenance/README.md) | File hashes, import decisions, and duplicate records |
 
 ## Repository layout
 
@@ -31,11 +30,11 @@ hardware/       Mechanical components and electronics revisions
 experiments/    Original data, derived tables, protocols, and metadata
 analysis/       Acquisition and analysis code
 results/        Figures and poster previews
-docs/           Methods, history, reports, and provenance
-archive/        Historical firmware and superseded documentation
+docs/           Methods and development history
+archive/        Original wiring and hardware notes
 ```
 
-`SURP` remains the original local archive. Large originals, restricted material, and files awaiting ownership review are indexed rather than silently discarded. See [storage and sharing](docs/storage.md).
+This public repository is a curated copy of the research archive. Raw EMG recordings, large poster originals, inherited CAD, and restricted third-party files are kept private.
 
 ## Reproduce the IMU analysis
 
@@ -50,7 +49,7 @@ python analysis/imu/analyze_imu.py --output analysis/reproduced/imu
 
 The script reads the six original IMU CSVs by default. It produces per-trial summaries, combined derived data, figures, notes, and a bundle. Reproduction outputs stay separate from the imported historical results.
 
-For EMG, open `analysis/emg/process_all_emg.m` in MATLAB and select `experiments/emg-condition-comparison/raw/spreadsheets/condition-trials`. It writes a new `emg_processed` folder beside those inputs. See the [analysis guide](analysis/README.md) before interpreting the output.
+The EMG pipeline is `analysis/emg/process_all_emg.m` (MATLAB). The raw EMG spreadsheets it reads are not published, so it is included for reference. See the [analysis guide](analysis/README.md).
 
 ## Build firmware
 
@@ -70,4 +69,4 @@ Next steps include measuring cable force, improving actuation and pretension, va
 
 ## Sharing and attribution
 
-The local organization is ready for review; public data and image sharing remain pending. Inherited and vendor files have separate provenance. No license is assigned to third-party work, and explicitly restricted CAD is excluded from the repository. [Sharing notes](docs/storage.md) describe the remaining review items.
+Published with the approval of the research advisor. Hardware files in `hardware/` are the author's own designs; inherited and vendor files are excluded, and no license is assigned to third-party work.

@@ -16,7 +16,7 @@ For new acquisition, read the [IMU protocol](../experiments/imu-controller-demo/
 
 ## MATLAB
 
-`emg/process_all_emg.m` is the CH2 pipeline. Select `experiments/emg-condition-comparison/raw/spreadsheets/condition-trials` when prompted. The folder contains exactly the 12 condition spreadsheets. The separate Assist_Trial is not part of that four-condition comparison.
+`emg/process_all_emg.m` is the CH2 pipeline. The raw EMG spreadsheets are not published; with the private data, select `experiments/emg-condition-comparison/raw/spreadsheets/condition-trials` when prompted. The folder contains exactly the 12 condition spreadsheets. The separate Assist_Trial is not part of that four-condition comparison.
 
 The script creates `emg_processed` beside the chosen inputs. Imported historical CH2 outputs are under the experiment's `processed/ch2-rms/` directory; new outputs should be compared before replacing historical results. Whole-record DC removal and rolling RMS run with base MATLAB. Optional bandpass filtering requires Signal Processing Toolbox and a verified suitable signal rate.
 
