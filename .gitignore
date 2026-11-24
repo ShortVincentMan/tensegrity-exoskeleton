@@ -23,6 +23,18 @@
 !/docs/research-question.md
 !/docs/methods.md
 
+# Own hardware designs (inherited CAD stays private)
+!/hardware/
+!/hardware/**
+/hardware/mechanical/components/enclosure/Electronics Packaging/
+
+# IMU controller demo data (advisor-approved; EMG stays private)
+!/experiments/
+!/experiments/imu-controller-demo/
+!/experiments/imu-controller-demo/**
+/experiments/imu-controller-demo/raw/unscored/
+
+
 # Selected results
 !/results/
 !/results/limitations.md

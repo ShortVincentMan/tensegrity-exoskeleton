@@ -1,25 +1,21 @@
-# Research analysis
+# Analysis
 
-The EMG and IMU studies are independent. Their files are not synchronized, and their analysis pipelines must not be combined into a single time series.
-
-## Python
-
-Install `analysis/requirements.txt` into a virtual environment. The recorder uses pyserial; the IMU analysis uses NumPy, pandas, and Matplotlib.
+## Python (IMU trials)
 
 ```sh
+python -m venv .venv && source .venv/bin/activate
+pip install -r analysis/requirements.txt
 python analysis/imu/analyze_imu.py --output analysis/reproduced/imu
 ```
 
-Its default inputs resolve relative to the repository, so the command also works from another working directory. Optional `--input` and `--output` paths override the defaults. The broad dependency ranges support installation; they are not an exact historical environment lock.
+`imu/analyze_imu.py` reads the six trial CSVs from `experiments/imu-controller-demo/raw/` and writes per-trial summaries, a combined table, and plots. Use `--input` and `--output` to point it somewhere else.
 
-For new acquisition, read the [IMU protocol](../experiments/imu-controller-demo/protocol.txt). The recorder requires `--port`, `--out`, `--trial`, and `--load`; its load argument is recorded in pounds. Choose a new output filename and preserve the `.raw.log` sidecar. USB baud differs from the older EMG logger.
+`acquisition/record_imu.py` is the recorder I used during trials. It reads the ESP32's serial output and saves a CSV (for example: `python analysis/acquisition/record_imu.py --port COM5 --out t7.csv --trial t7 --load 0`). See the [protocol](../experiments/imu-controller-demo/protocol.txt).
 
-## MATLAB
+## MATLAB (EMG pilot)
 
-`emg/process_all_emg.m` is the CH2 pipeline. Select `experiments/emg-condition-comparison/raw/spreadsheets/condition-trials` when prompted. The folder contains exactly the 12 condition spreadsheets. The separate Assist_Trial is not part of that four-condition comparison.
+- `emg/process_all_emg.m`: removes the DC offset from channel 2 and computes rolling RMS for the 12 condition recordings. It asks you to pick the folder of spreadsheets.
+- `emg/combined-channel-preview/`: an earlier two-channel version that made the poster comparison plot.
+- `legacy/emg/`: my first attempts, as Live Scripts. They're kept for reference, but they don't handle the timestamp problems.
 
-The script creates `emg_processed` beside the chosen inputs. Imported historical CH2 outputs are under the experiment's `processed/ch2-rms/` directory; new outputs should be compared before replacing historical results. Whole-record DC removal and rolling RMS run with base MATLAB. Optional bandpass filtering requires Signal Processing Toolbox and a verified suitable signal rate.
-
-`emg/combined-channel-preview/` preserves the separate `Process_EMG.m` and `Plot_EMG_Comparison.m` pipeline. Its inputs are under the experiment's `derived/combined-channel-preview/` directory. Copy that pipeline's scripts into a temporary copy of its input folder to run them together as originally instructed; keep reproduction outputs separate. Read its original `READ_ME.txt` first.
-
-The `.mlx` files in `legacy/emg/` are earlier methods, not the preferred pipeline. Their assumptions about timing, filtering, and duplicate timestamps require review.
+The raw EMG recordings aren't published, so these scripts are here to show the processing.

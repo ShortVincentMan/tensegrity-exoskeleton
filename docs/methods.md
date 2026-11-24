@@ -1,15 +1,20 @@
-# Research methods and data provenance
+# Methods
 
-Two studies are maintained independently: an EMG condition comparison and an IMU controller demonstration. Original recordings remain separate from derived tables, processing spreadsheets, and presentation figures.
+I ran two separate experiments. They weren't recorded at the same time, so their data can't be lined up against each other.
 
-## Data lineage
+## IMU controller trials
 
-Each inventoried SURP file has a SHA-256 source hash, source-relative path, import destination or retention decision, and publication status in `provenance/surp-import-manifest.json`. A destination hash records any explicit organizational adaptations. `exact-duplicates.json` contains byte-identical file groups; shared filenames alone do not establish duplication.
+Six trials (`t1` to `t6`) with the exoskeleton worn and no external weight. The `imu-trial-logger` firmware logs every control sample as CSV at 25 Hz: raw IMU angles, the filtered elbow angle and velocity, the controller state, and the commanded and emitted motor steps. The [protocol](../experiments/imu-controller-demo/protocol.txt) covers setup and the recorder commands.
 
-Each experiment's metadata retains filename-based identity and condition labels as recorded. Unknown participant identity, exact firmware association, acquisition settings, and setup details remain unknown rather than being inferred from timestamps or folder names. Session export folders are source provenance, not independently verified acquisition dates.
+`analysis/imu/analyze_imu.py` reads the six CSVs and produces per-trial summaries and the figures in `results/figures/imu/`. It doesn't smooth, align, or interpolate anything beyond what the firmware already did.
 
-## Analysis
+What these trials can and can't show:
 
-The IMU script reads six CSVs and reports motion, logging intervals, controller state, and quality notes. It does not claim calibrated anatomy or force measurement. The CH2 MATLAB pipeline processes 12 original condition spreadsheets without cross-trial alignment or averaging; its time interpretation and RMS windows are documented beside the outputs.
+- The angle is the relative rotation between the two IMUs, zeroed with the arm straight. It isn't a calibrated anatomical angle (see the validation table in the main README).
+- "Assist" is a controller state. Motor steps are pulses the firmware sent, not measured rotation, torque, or cable force.
 
-The two-channel preview and poster comparison have their own derived inputs and methods. Neither is a replacement for original Shimmer acquisition. See each experiment README and the original analysis notes before using a result.
+## EMG pilot
+
+Twelve recordings with a Shimmer EMG sensor: baseline (no exoskeleton) and wearing the exoskeleton, each with no added weight and with 15 lb, three reps each. `analysis/emg/process_all_emg.m` removes DC offset and computes rolling RMS on channel 2. The raw recordings aren't published, but the processing code and figures are.
+
+The exports had timing problems (around 51 Hz effective rate, repeated timestamps in some files) and uneven rest and movement periods, so I don't draw a conclusion about muscle effort from them.

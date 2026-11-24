@@ -1,0 +1,103 @@
+IMU DATA COLLECTION
+
+Use Arduino C++, not plain C. Open imu_collection.ino in Arduino IDE;
+select your existing ESP32 board and upload. PlatformIO users can copy the
+sketch into src/main.cpp (Arduino.h is already included).
+USB baud: 115200. Both sensor UARTs stay at 115200.
+
+Install recorder dependency: python -m pip install pyserial
+List serial ports: python -m serial.tools.list_ports
+Close Arduino Serial Monitor before running the recorder:
+python record_imu.py --port COM5 --out AS_NW_01.csv --trial AS_NW_01 --load 0
+On macOS use your /dev/cu... port instead of COM5.
+The recorder accepts commands typed in the terminal; press Enter after each.
+One record command per output file. Existing files are never overwritten.
+
+SETUP / EACH TRIAL
+1. Start recorder. Serial connection may reset the board. Select STOP.
+2. Type assisted or baseline. Mode changes require STOP and recording ended.
+   BASELINE disables ALL motor output, including manual winding; the arm
+   remains worn. ASSISTED uses the original shadow/assist/release behavior.
+   This baseline is not the same as your EMG baseline without the exoskeleton.
+3. For assisted trials, restore the original straight-arm just-taut reference
+   using your usual mechanical setup and manual wind button. Do not simply
+   redefine a partly wound spool as zero. For baseline trials make sure cables
+   are slack enough that passive tension does not lift or restrict the arm.
+4. Hold arm straight and still, switch STOP to AUTO, wait for AUTO_READY.
+   Both modes zero the IMUs; baseline remains motor-disabled.
+5. Type record. Start with 2 seconds motionless.
+6. Raise slowly to approximately 45-60 displayed degrees over 2-3 seconds.
+7. Hold for 3 seconds (qualifies the >=25 degree, >=2.5 second detector).
+8. Lower approximately 4-5 displayed degrees slowly over about 1 second;
+   hold that position for 1 second. A plateau alone does NOT trigger assistance.
+   A >=3 degree dip must persist >=400 ms. Fast lowering <=-18 deg/s resets
+   the detector. Baseline logs dip_pending but never enters ASSIST.
+9. Observe for about 2.5 seconds without intentionally making a second curl.
+   Try to keep voluntary effort consistent; this is a controller demonstration,
+   not a controlled measurement of motor-only lifting or fatigue.
+10. Lower normally to the starting position. Type end, select STOP, then quit.
+    Rest about 60 seconds or until comfortable before the next trial.
+    Keep all failed/no-response trials and record reasons separately.
+
+TRIAL COUNT
+First do 2 unscored practice runs to confirm angles, trigger, and logging.
+Recommended: 5 assisted + 5 baseline trials at ONE manageable load, alternate
+baseline and assisted. Minimum pilot: 3 each. Start with no external weight;
+only repeat with a load already comfortably tested on this prototype.
+If comparing both no weight and a loaded condition, 5 per mode per load = 20
+trials. Trial counts describe a single-person pilot, not statistical power or
+clinical efficacy. Do not deliberately exercise to failure to trigger the IMU.
+Optional: 3 steady holds/normal curls without a deliberate dip to check unwanted
+activations. Slow intentional lowering can still trigger this detector.
+
+WHAT CHANGED
+25 Hz nonblocking CSV rows, recording commands, baseline motor inhibition,
+raw orientations, relative rotation, filtered angle, actual-time velocity,
+controller state, dip/reference, commanded target, emitted pulse position,
+driver state, assist count, sensor freshness, dropped-log-row counter.
+Control derivative now uses elapsed tick time rather than assumed 10 ms.
+Original switch stop behavior, sensor faults, travel limits and assistance
+thresholds remain. testassist is rejected during recording and baseline.
+end stops logging ONLY; use the physical STOP switch to disable motion.
+Serial diagnostics are shown in terminal but excluded from the CSV.
+
+INTERPRETATION
+relative_rotation_deg is the original neutral-relative quaternion rotation
+magnitude. It is an elbow-flexion proxy under constrained motion, NOT a
+validated anatomical elbow angle; wrist/forearm rotation can affect it.
+Check known straight, approximately 45 and 90 degree physical positions first.
+Do not relabel the original approximately 83 degree reading as physical 100
+degrees without a validated calibration. Keep upper arm and forearm orientation
+consistent. Stale filtered values are exported as nan; exclude these rows.
+Motor position is counted EMITTED STEP PULSES, not encoder-measured position.
+Commanded rate limit is not delivered step rate, force or torque.
+
+PLOT / CONCLUSION
+Plot filtered_angle_deg versus time_ms/1000; shade state=ASSIST and mark its
+onset. Add an aligned velocity panel if space permits. Overlay baseline and
+assisted trials aligned at dip onset; retain actual elapsed time and interpolate
+only within valid intervals when computing averages. Show individual traces
+plus mean and spread rather than only one favorable trial.
+Report trigger successes / trials, dip-confirmation-to-assist delay,
+angle change 2 seconds after assist onset, and recovery/timeout counts.
+For baseline use the same dip-based time reference (no real assist onset).
+Do not call voluntary resumed lifting proof of motor assistance. An IMU cannot
+identify fatigue, measure muscle effort, or establish motor force. Existing EMG
+collected separately cannot be directly time-aligned with these new trials.
+
+VERIFICATION
+Host C++ syntax checked using Arduino API stubs; recorder Python syntax checked.
+An ESP32 toolchain and physical hardware were unavailable. Compile for your
+actual board and do a no-load bench run before collecting scored trials.
+
+UPDATE: All serial ports now use 115200 baud. CSV rate is 25 Hz to fit USB
+throughput. Recorder opens USB before creating the CSV. record now accepts
+SHADOW, ASSIST or RELEASE while zeroed and sensors fresh, and does not restart
+an already active recording. Start recording before movement for scored trials.
+Rejected recording requests print diagnostic status.
+
+RECORDER UPDATE: Complete serial lines are buffered across reads/timeouts.
+A raw .raw.log sidecar preserves all received bytes. A missing header no longer
+causes valid 27-field rows to be discarded. A received incompatible header
+stops recording rather than silently mapping fields. Each trial uses a new CSV
+and backup filename. The terminal reports saved counts and rejection reasons.
