@@ -16,9 +16,11 @@ Each folder is its own PlatformIO project targeting an ESP32 (`esp32dev`), writt
 | --- | --- |
 | `include/config.h` | Every tunable: spool geometry, control rates, filter constants, and assist thresholds |
 | `include/pins.h` | Pin assignments for the drivers, IMU UARTs, and switches |
-| `src/imu.cpp` | BNO085 UART-RVC packet parser (19-byte frames with a checksum), Euler-to-quaternion conversion, and relative elbow angle |
+| `lib/exo_core/` | The hardware-independent logic, kept free of Arduino code so it can be unit tested: the BNO085 UART-RVC packet parser (`rvc_packet`), the quaternion elbow-angle math (`quaternion`), and switch decoding, angle-to-steps mapping and stall detection (`control_logic`) |
+| `src/imu.cpp` | Reads both IMU UARTs through the parser and tracks sensor freshness and neutral zeroing |
 | `src/motor.cpp` | Step generation and position tracking for the A4988 drivers |
-| `src/controller.cpp` | State machine, stall detection, safety checks, and serial logging |
+| `src/controller.cpp` | State machine, safety checks, and serial logging |
+| `test/` | Unity tests for `lib/exo_core`, run on the host with `pio test -e native` |
 
 ## Build
 

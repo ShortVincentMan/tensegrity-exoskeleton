@@ -2,6 +2,8 @@
 
 #include <Arduino.h>
 
+#include "quaternion.h"
+
 struct ImuData {
     float yaw;
     float pitch;
@@ -10,13 +12,6 @@ struct ImuData {
     unsigned long updatedMs;
     uint32_t packetCount;
     uint32_t badPacketCount;
-};
-
-struct Quaternion {
-    float w;
-    float x;
-    float y;
-    float z;
 };
 
 void imuBegin();

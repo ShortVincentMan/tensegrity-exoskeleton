@@ -4,6 +4,7 @@
 #include <math.h>
 
 #include "config.h"
+#include "control_logic.h"
 #include "imu.h"
 #include "motor.h"
 #include "pins.h"
@@ -11,13 +12,14 @@
 namespace {
 
 enum class State { Disabled, Calibrating, Shadow, Assist, Release, Fault };
-enum class Toggle { Unknown, Auto, Stop, Between, Invalid };
 
 constexpr long PULSES_PER_REV = MOTOR_FULL_STEPS_PER_REV;
 const long maxWindSteps = lroundf((SAFE_CABLE_TRAVEL_MM / SPOOL_TRAVEL_PER_REV_MM) * PULSES_PER_REV);
 const long shadowSlackSteps = lroundf((SHADOW_SLACK_MM / SPOOL_TRAVEL_PER_REV_MM) * PULSES_PER_REV);
-const long minUnwindSteps = -shadowSlackSteps;
 const float stepsPerMeasuredDegree = static_cast<float>(maxWindSteps) / MEASURED_ANGLE_AT_PHYSICAL_100_DEG;
+const SpoolMap spoolMap = {stepsPerMeasuredDegree, maxWindSteps, shadowSlackSteps};
+StallDetector stallDetector({MIN_ELEVATED_ANGLE_DEG, MIN_ELEVATED_TIME_MS, DIP_TRIGGER_DEG,
+                             DIP_CONFIRM_MS, INTENTIONAL_LOWERING_SPEED_DEG_S});
 
 State state = State::Disabled;
 Toggle rawToggle = Toggle::Unknown;
@@ -32,8 +34,6 @@ bool syncPulseActive = false;
 unsigned long rawToggleChangedMs = 0;
 unsigned long lastControlUs = 0;
 unsigned long stateEnteredMs = 0;
-unsigned long elevatedStartMs = 0;
-unsigned long dipStartMs = 0;
 unsigned long recoveryStartMs = 0;
 unsigned long releaseSettledStartMs = 0;
 unsigned long assistCooldownUntilMs = 0;
@@ -50,7 +50,6 @@ float measuredForearmPacketHz = 0;
 float measuredControlHz = 0;
 float filteredAngle = 0;
 float filteredVelocity = 0;
-float preDipReferenceAngle = 0;
 float assistTargetAngle = 0;
 long commandedTargetSteps = 0;
 float commandedMaxStepRate = SHADOW_MAX_STEP_RATE;
@@ -88,19 +87,13 @@ bool automaticActive() {
 }
 
 Toggle readToggle() {
-    const bool autoSelected = digitalRead(AUTO_SWITCH_PIN) == LOW;
-    const bool stopSelected = digitalRead(STOP_SWITCH_PIN) == LOW;
-    if (autoSelected && !stopSelected) return Toggle::Auto;
-    if (stopSelected && !autoSelected) return Toggle::Stop;
-    if (!autoSelected && !stopSelected) return Toggle::Between;
-    return Toggle::Invalid;
+    return decodeToggle(digitalRead(AUTO_SWITCH_PIN) == LOW,
+                        digitalRead(STOP_SWITCH_PIN) == LOW);
 }
 
 void resetFatigueDetector() {
-    elevatedStartMs = 0;
-    dipStartMs = 0;
+    stallDetector.reset();
     recoveryStartMs = 0;
-    preDipReferenceAngle = 0;
 }
 
 void enterState(State next) {
@@ -126,11 +119,11 @@ void disableController(const char *reason, bool fault = false) {
 }
 
 long tautStepsForAngle(float angle) {
-    return constrain(lroundf(angle * stepsPerMeasuredDegree), 0L, maxWindSteps);
+    return ::tautStepsForAngle(spoolMap, angle);
 }
 
 long shadowStepsForAngle(float angle) {
-    return constrain(tautStepsForAngle(angle) - shadowSlackSteps, minUnwindSteps, maxWindSteps);
+    return followStepsForAngle(spoolMap, angle);
 }
 
 void beginRelease(const char *reason) {
@@ -141,7 +134,7 @@ void beginRelease(const char *reason) {
 }
 
 void beginAssist() {
-    const float lostAngle = preDipReferenceAngle - filteredAngle;
+    const float lostAngle = stallDetector.referenceAngle() - filteredAngle;
     const float correction = constrain(lostAngle, 0.0f, MAX_ASSIST_CORRECTION_DEG);
     assistTargetAngle = constrain(filteredAngle + correction, 0.0f, MEASURED_ANGLE_AT_PHYSICAL_100_DEG);
     enterState(State::Assist);
@@ -159,28 +152,7 @@ void updateShadow(unsigned long nowMs) {
         resetFatigueDetector();
         return;
     }
-    if (elevatedStartMs == 0) {
-        elevatedStartMs = nowMs;
-        preDipReferenceAngle = filteredAngle;
-        return;
-    }
-    if (filteredAngle > preDipReferenceAngle) {
-        preDipReferenceAngle = filteredAngle;
-        dipStartMs = 0;
-    }
-    if (filteredVelocity <= INTENTIONAL_LOWERING_SPEED_DEG_S) {
-        elevatedStartMs = nowMs;
-        preDipReferenceAngle = filteredAngle;
-        dipStartMs = 0;
-        return;
-    }
-    if (nowMs - elevatedStartMs < MIN_ELEVATED_TIME_MS ||
-        preDipReferenceAngle - filteredAngle < DIP_TRIGGER_DEG) {
-        dipStartMs = 0;
-        return;
-    }
-    if (dipStartMs == 0) dipStartMs = nowMs;
-    if (nowMs - dipStartMs >= DIP_CONFIRM_MS) beginAssist();
+    if (stallDetector.update(filteredAngle, filteredVelocity, nowMs)) beginAssist();
 }
 
 void updateAssist(unsigned long nowMs) {
@@ -397,7 +369,7 @@ void printDataRow() {
     printCsvFloat(rawAngle, 2); Serial.print(','); printCsvFloat(zeroed ? filteredAngle : NAN, 2); Serial.print(','); printCsvFloat(zeroed ? filteredVelocity : NAN, 2); Serial.print(',');
     Serial.print(stateName()); Serial.print(','); Serial.print(toggleName(stableToggle)); Serial.print(','); Serial.print(zeroed); Serial.print(','); Serial.print(fresh); Serial.print(','); Serial.print(state == State::Fault); Serial.print(',');
     Serial.print(motorPosition()); Serial.print(','); Serial.print(commandedTargetSteps); Serial.print(','); Serial.print(commandedTargetSteps - motorPosition()); Serial.print(',');
-    Serial.print(motorPosition() * SPOOL_TRAVEL_PER_REV_MM / PULSES_PER_REV, 2); Serial.print(','); Serial.print(preDipReferenceAngle, 2); Serial.print(','); Serial.print(assistTargetAngle, 2); Serial.print(','); Serial.print(now - stateEnteredMs); Serial.print(',');
+    Serial.print(motorPosition() * SPOOL_TRAVEL_PER_REV_MM / PULSES_PER_REV, 2); Serial.print(','); Serial.print(stallDetector.referenceAngle(), 2); Serial.print(','); Serial.print(assistTargetAngle, 2); Serial.print(','); Serial.print(now - stateEnteredMs); Serial.print(',');
     Serial.print(age(upper)); Serial.print(','); Serial.print(age(forearm)); Serial.print(','); Serial.print(measuredUpperPacketHz, 1); Serial.print(','); Serial.print(measuredForearmPacketHz, 1); Serial.print(','); Serial.print(measuredControlHz, 1); Serial.print(','); Serial.print(upper.badPacketCount); Serial.print(','); Serial.print(forearm.badPacketCount); Serial.print(','); Serial.print(syncPulseActive); Serial.print(','); Serial.println(droppedLogRows);
 }
 
@@ -471,7 +443,7 @@ void serviceSerialCommand(String command) {
     else if (lower == "header") printHeader();
     else if (lower == "rates") { Serial.print("#RATES,upper_hz="); Serial.print(measuredUpperPacketHz, 1); Serial.print(",forearm_hz="); Serial.print(measuredForearmPacketHz, 1); Serial.print(",control_hz="); Serial.println(measuredControlHz, 1); }
     else if (lower == "status") { Serial.print("#STATUS,state="); Serial.print(stateName()); Serial.print(",toggle="); Serial.print(toggleName(stableToggle)); Serial.print(",zeroed="); Serial.print(zeroed); Serial.print(",logging="); Serial.println(trialLogging); }
-    else if (lower == "testassist" && state == State::Shadow && stableToggle == Toggle::Auto) { preDipReferenceAngle = filteredAngle + DIP_TRIGGER_DEG; beginAssist(); }
+    else if (lower == "testassist" && state == State::Shadow && stableToggle == Toggle::Auto) { stallDetector.setReferenceAngle(filteredAngle + DIP_TRIGGER_DEG); beginAssist(); }
     else if (lower == "stop") { trialLogging = false; autoTransitionAuthorized = false; zeroed = false; disableController("SERIAL_STOP"); Serial.println("#ACTION,MOVE_SWITCH_TO_STOP_BEFORE_RESTART"); }
     else if (lower == "help") { Serial.println("#COMMAND,session_ID"); Serial.println("#COMMAND,trial_TRIALID_CONDITION_REP_LOADKG"); Serial.println("#COMMAND,senseonly,senseoff,start,end,mark_LABEL,header,rates,status,testassist,stop,help"); }
     else if (command.length() > 0) Serial.println("#ERROR,UNKNOWN_COMMAND,use_help");
