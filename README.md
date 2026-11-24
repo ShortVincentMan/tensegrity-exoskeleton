@@ -65,6 +65,7 @@ Readings rise consistently with flexion, which is good enough for feedback contr
 | [Analysis](analysis/README.md) | Python acquisition and plotting, MATLAB processing, and legacy methods |
 | [Results](results/README.md) | Figures, poster preview, and limits on interpretation |
 | [Methods](docs/methods.md) | Experiment separation, provenance, and measurement definitions |
+| [Build log](docs/build-log.md) | How the prototype came together, condensed from my lab notebook |
 | [Development history](docs/development-log.md) | Project stages and preserved historical firmware |
 
 ## Repository layout
@@ -114,7 +115,7 @@ If I keep going, the priorities are stronger actuation (higher-torque motors and
 
 The six IMU recordings document motion sensing and controller activation; participant notes report no noticeable lifting assistance. EMG export timing, signal drift, and inconsistent recording intervals prevent a reliable conclusion about reduced muscle effort. Relative IMU angle and emitted motor pulses are proxies, not independently validated anatomical angle or measured torque.
 
-Next steps include measuring cable force, improving actuation and pretension, validating angle estimates, and collecting synchronized trials with verified EMG acquisition settings and standardized movement intervals. See [limitations](results/limitations.md).
+See [limitations](results/limitations.md).
 
 ## Sharing and attribution
 
