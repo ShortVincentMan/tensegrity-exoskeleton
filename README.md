@@ -1,4 +1,3 @@
-![Poster of Feedback Control of an Upper Limb Tensegrity Exoskeleton](results/poster/source-and-previews/finalposter.jpg)
 # Feedback Control of an Upper-Limb Tensegrity Exoskeleton
 
 Research by **Vincent Le**, advised by **Dr. Alan Zhang**, Department of Mechanical Engineering, Cal Poly San Luis Obispo. Built during the **2026 Summer Undergraduate Research Program (SURP)**.
@@ -10,6 +9,16 @@ Over about 40 lab days I took an inherited tensegrity arm, rebuilt it to actuall
 **What works:** both IMUs stream reliably, the firmware turns them into an elbow angle, and the motors follow the arm and trigger an assist when the arm stalls mid-curl. **What doesn't (yet):** the motors are too weak. With a 5 lb dumbbell the system stalled, and test participants didn't feel meaningful lifting help. This is a proof of concept for the sensing and control loop, not a finished assistive device.
 
 ![Integrated upper-limb research prototype](results/figures/assets/tensegrity%20arm.png)
+
+### Start here (2-minute tour)
+
+| If you want to see... | Look at |
+| --- | --- |
+| The control logic | [`firmware/controller/src/controller.cpp`](firmware/controller/src/controller.cpp): the follow / assist / release state machine |
+| IMU packet parsing and elbow-angle math | [`firmware/controller/src/imu.cpp`](firmware/controller/src/imu.cpp) |
+| The PCB | [`hardware/electronics/pcb-v1`](hardware/electronics/pcb-v1) (KiCad + Gerbers for the fabricated Rev A board) and the [layout image](results/figures/photos/pcb-layout.png) |
+| How it all came together | [Build log](docs/build-log.md) |
+| The research poster | [Poster preview](results/poster/source-and-previews/finalposter.jpg) |
 
 ## What I built
 
@@ -61,12 +70,11 @@ Readings rise consistently with flexion, which is good enough for feedback contr
 | [Firmware](firmware/README.md) | Current controller, independent loggers, calibration, and sensor examples |
 | [Hardware](hardware/README.md) | Mechanical component designs, cable calculations, and two PCB revisions |
 | EMG experiment | Raw Shimmer recordings are kept private; processing code is in [analysis](analysis/README.md) and figures in [results](results/README.md) |
-| [IMU experiment](experiments/imu-controller-demo/README.md) | Six controller recordings, raw serial logs, and per-trial analysis |
+| [IMU experiment](experiments/imu-controller-demo/README.md) | Six controller recordings and per-trial analysis |
 | [Analysis](analysis/README.md) | Python acquisition and plotting, MATLAB processing, and legacy methods |
 | [Results](results/README.md) | Figures, poster preview, and limits on interpretation |
 | [Methods](docs/methods.md) | Experiment separation, provenance, and measurement definitions |
 | [Build log](docs/build-log.md) | How the prototype came together, condensed from my lab notebook |
-| [Development history](docs/development-log.md) | Project stages and preserved historical firmware |
 
 ## Repository layout
 
@@ -76,7 +84,7 @@ hardware/       Mechanical components and electronics revisions
 experiments/    Original data, derived tables, protocols, and metadata
 analysis/       Acquisition and analysis code
 results/        Figures and poster previews
-docs/           Methods and development history
+docs/           Research question, methods, and build log
 archive/        Original wiring and hardware notes
 ```
 
