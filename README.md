@@ -1,6 +1,6 @@
 # Feedback Control of an Upper-Limb Tensegrity Exoskeleton
 
-[![Firmware](https://github.com/ShortVincentMan/tensegrity-exoskeleton-public/actions/workflows/firmware.yml/badge.svg)](https://github.com/ShortVincentMan/tensegrity-exoskeleton-public/actions/workflows/firmware.yml)
+[![Firmware](https://github.com/ShortVincentMan/tensegrity-exoskeleton/actions/workflows/firmware.yml/badge.svg)](https://github.com/ShortVincentMan/tensegrity-exoskeleton/actions/workflows/firmware.yml)
 
 Research by **Vincent Le**, advised by **Dr. Alan Zhang**, Department of Mechanical Engineering, Cal Poly San Luis Obispo. Built during the **2026 Summer Undergraduate Research Program (SURP)**.
 
