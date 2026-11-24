@@ -9,6 +9,16 @@ The prototype demonstrates integrated sensing, motor commands, and controller ac
 
 ![Integrated upper-limb research prototype](results/figures/assets/tensegrity%20arm.png)
 
+## Build photos
+
+| Worn prototype | Electronics enclosure | PCB layout (KiCad) |
+| --- | --- | --- |
+| ![Prototype worn on the arm](results/figures/photos/worn-prototype.jpg) | ![ESP32, stepper drivers and batteries in the enclosure](results/figures/photos/electronics-enclosure.jpg) | ![Custom PCB layout](results/figures/photos/pcb-layout.png) |
+
+| Tensegrity frame | CAD assembly |
+| --- | --- |
+| ![Tensegrity arm frame](results/figures/photos/tensegrity-frame.jpg) | ![CAD assembly](results/figures/photos/cad-assembly.png) |
+
 ## Explore the research
 
 | Area | Contents |

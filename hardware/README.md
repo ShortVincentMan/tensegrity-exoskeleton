@@ -8,6 +8,20 @@ Mechanical changes and electronics revisions are preserved with their original f
 
 Inherited CAD and assemblies are under the ignored `local-review/mechanical/inherited-cad/` folder on the organizing machine. Assemblies retain their source hierarchy; authorship and native assembly references need review before import into published hardware. Printer-specific jobs remain in local review. Explicitly restricted CAD is only in the original SURP archive.
 
+### Latest revision of each part
+
+Each folder keeps the design iterations. The most recent revision, judged by file name, is:
+
+| Part | File |
+| --- | --- |
+| Electronics housing and lid | `enclosure/my own cad/refined housing.stl`, `reifned lid.stl` (Fusion source: `electronics housing.f3d`) |
+| Fairlead and cap | `fairleads/my own cad/new fairlead.stl` (source `new fairlead.f3d`), `revised Fairlead Cap.stl` |
+| Spool / motor cap (SY20STH30 motor) | `spools/my own cad/v2 sy20sth30-0604a motor cap.stl` |
+| Spool / motor cap (11HS18 motor) | `spools/my own cad/tolerant spool 11hs18-0674s motor cap.stl` |
+| Motor mount | `motor-mounts/my own cad/new motor plate.stl` |
+| IMU mount | `imu-mounts/my own cad/wider imu plate.stl` |
+| Node connector | `connectors-and-caps/my own cad/New Aluminum Connector.stl` |
+
 ## Electronics
 
 `electronics/pcb-v1/` holds the SURP-Motors project; `pcb-v2/` holds SURP_V2. V1 fabrication Gerbers and drill files are under `fabrication/`. V2 is preserved independently and is not assumed fabrication-validated.
