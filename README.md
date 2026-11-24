@@ -1,5 +1,7 @@
 # Feedback Control of an Upper-Limb Tensegrity Exoskeleton
 
+[![Firmware](https://github.com/ShortVincentMan/tensegrity-exoskeleton/actions/workflows/firmware.yml/badge.svg)](https://github.com/ShortVincentMan/tensegrity-exoskeleton/actions/workflows/firmware.yml)
+
 Research by **Vincent Le**, advised by **Dr. Alan Zhang**, Department of Mechanical Engineering, Cal Poly San Luis Obispo. Built during the **2026 Summer Undergraduate Research Program (SURP)**.
 
 Most upper-limb exoskeletons make you pick a tradeoff: rigid frames are heavy and restrictive, and cable systems usually need a big external frame or a bulky pack of motors and batteries. I wanted to see if a tensegrity structure (rods held together by cables and springs, closer to how bones and muscles actually work) could give real elbow assistance while staying light and compliant.
@@ -15,7 +17,8 @@ Over about 40 lab days I took an inherited tensegrity arm, rebuilt it to actuall
 | If you want to see... | Look at |
 | --- | --- |
 | The control logic | [`firmware/controller/src/controller.cpp`](firmware/controller/src/controller.cpp): the follow / assist / release state machine |
-| IMU packet parsing and elbow-angle math | [`firmware/controller/src/imu.cpp`](firmware/controller/src/imu.cpp) |
+| IMU packet parsing and elbow-angle math | [`firmware/controller/lib/exo_core`](firmware/controller/lib/exo_core/src) |
+| The unit tests | [`firmware/controller/test`](firmware/controller/test) |
 | The PCB | [`hardware/electronics/pcb-v1`](hardware/electronics/pcb-v1) (KiCad + Gerbers for the fabricated Rev A board) and the [layout image](results/figures/photos/pcb-layout.png) |
 | How it all came together | [Build log](docs/build-log.md) |
 | The research poster | [Poster](results/poster/source-and-previews/finalposter.jpg) |
@@ -86,6 +89,14 @@ pio run -d firmware/controller -t upload  # flash an ESP32
 ```
 
 Wiring is in [docs/wiring.md](docs/wiring.md).
+
+**Unit tests** run on your computer, no ESP32 needed:
+
+```sh
+pio test -d firmware/controller -e native
+```
+
+They cover the IMU packet parser (checksums, resyncing after garbage bytes), the quaternion elbow-angle math, and the stall detection that decides when to assist. GitHub Actions runs them and builds the ESP32 firmware on every push.
 
 **IMU analysis** (Python 3):
 
